@@ -1,49 +1,52 @@
 import { UserRole } from 'src/dtos/enums/user-role.enum';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import * as typeorm from 'typeorm';
+import { AddressEntity } from './addresses.entity';
 
-@Entity('users')
+@typeorm.Entity('users')
 export class UserEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @typeorm.PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @typeorm.Column()
   name: string;
 
-  @Column({ unique: true })
+  @typeorm.Column({ unique: true })
   email: string;
 
-  @Column({ unique: true })
+  @typeorm.Column({ unique: true })
   cpf: string;
 
-  @Column({ unique: true, length: 11 })
+  @typeorm.Column({ unique: true, length: 11 })
   phone: string;
 
-  @Column({ name: 'password', length: 255, select: false })
+  @typeorm.Column({ name: 'password', length: 255, select: false })
   password: string;
 
-  @Column({
+  @typeorm.Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.CUSTOMER,
   })
   role: UserRole;
 
-  @Column({ default: true })
+  @typeorm.Column({ default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
+  @typeorm.OneToMany(() => AddressEntity, (addres) => addres.user, {
+    nullable:true
+  })
+  address?: typeorm.Relation<AddressEntity[]>;
+
+  @typeorm.CreateDateColumn({ type: 'timestamptz', name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
+  @typeorm.UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ type: 'timestamptz', name: 'deleted_at', nullable: true })
+  @typeorm.DeleteDateColumn({
+    type: 'timestamptz',
+    name: 'deleted_at',
+    nullable: true,
+  })
   deletedAt?: Date;
 }
