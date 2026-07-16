@@ -25,6 +25,14 @@ export class AddressesRequestDto {
 
   @IsOptional()
   @IsString()
+  lot?: string;
+
+  @IsOptional()
+  @IsString()
+  block?: string;
+
+  @IsOptional()
+  @IsString()
   complement?: string;
 
   @IsNotEmpty()

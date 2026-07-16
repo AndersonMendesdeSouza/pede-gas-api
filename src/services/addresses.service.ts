@@ -62,7 +62,11 @@ export class AddressesService {
 
     await this.addressesRepository.manager.transaction(async (manager) => {
       await manager.update(AddressEntity, { userId }, { default: false });
-      await manager.update(AddressEntity, { id: address.id }, { default: true });
+      await manager.update(
+        AddressEntity,
+        { id: address.id },
+        { default: true },
+      );
     });
 
     return {
@@ -75,6 +79,45 @@ export class AddressesService {
     await this.addressesRepository.update({ userId }, { default: false });
 
     return this.findAll(userId);
+  }
+
+  async delete(id: string, userId: string): Promise<{ message: string }> {
+    const address = await this.findEntityById(id, userId);
+
+    await this.addressesRepository.delete({ id: address.id, userId });
+
+    return { message: 'Endereco deletado' };
+  }
+
+  async update(
+    id: string,
+    userId: string,
+    dto: AddressesRequestDto,
+  ): Promise<AddressesResponseDto> {
+    const address = await this.findEntityById(id, userId);
+
+    try {
+      if (dto.default === true) {
+        await this.addressesRepository.update({ userId }, { default: false });
+      }
+
+      address.default = dto.default ?? address.default;
+      address.name = dto.name?.trim() || address.name || 'Endereco';
+      address.street = dto.street.trim();
+      address.number = dto.number.trim();
+      address.lot = dto.lot?.trim() || undefined;
+      address.block = dto.block?.trim() || undefined;
+      address.complement = dto.complement?.trim() || undefined;
+      address.neighborhood = dto.neighborhood.trim();
+      address.city = dto.city.trim();
+      address.state = dto.state.trim().toUpperCase();
+      address.zipCode = dto.zipCode.trim();
+      address.country = dto.country?.trim() || 'BR';
+
+      return this.addressesRepository.save(address);
+    } catch (error) {
+      this.handleQueryError(error);
+    }
   }
 
   private async findEntityById(

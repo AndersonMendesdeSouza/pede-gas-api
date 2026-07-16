@@ -7,7 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
+import { error } from 'console';
 import { UpdateUserRequestDto } from 'src/dtos/request/update-user-request.dto';
+import { UserRecoveryPasswordDto } from 'src/dtos/request/user-recovery-password.dto';
 import { UserRequestDto } from 'src/dtos/request/user-request.dto';
 import { UserResponseDto } from 'src/dtos/response/user-response.dto';
 import { UserEntity } from 'src/entities/user.entity';
@@ -80,6 +82,21 @@ export class UserService {
     } catch (error) {
       this.handleQueryError(error);
     }
+  }
+  generateRecoveryCode(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+  async recoveryPassword(dto: UserRecoveryPasswordDto): Promise<string> {
+    const user = await this.userRepository.findOne({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário nao existe');
+    }
+
+    return this.generateRecoveryCode();
   }
 
   private async findEntityById(id: string): Promise<UserEntity> {

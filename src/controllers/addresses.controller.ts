@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -55,5 +56,22 @@ export class AddressesController {
     @Req() req: AuthenticatedRequest,
   ): Promise<AddressesResponseDto> {
     return this.addressesService.findById(id, req.user.id);
+  }
+
+  @Patch(':id')
+  async update(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: AddressesRequestDto,
+  ): Promise<AddressesResponseDto> {
+    return this.addressesService.update(id, req.user.id, dto);
+  }
+
+  @Delete(':id')
+  async delete(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<{ message: string }> {
+    return this.addressesService.delete(id, req.user.id);
   }
 }

@@ -4,6 +4,8 @@ export class AddressesResponseDto {
   name: string;
   street: string;
   number: string;
+  lot?: string;
+  block?: string;
   complement?: string;
   neighborhood: string;
   city: string;

@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UpdateUserRequestDto } from 'src/dtos/request/update-user-request.dto';
+import { UserRecoveryPasswordDto } from 'src/dtos/request/user-recovery-password.dto';
 import { UserRequestDto } from 'src/dtos/request/user-request.dto';
 import { UserResponseDto } from 'src/dtos/response/user-response.dto';
 import { UserService } from 'src/services/user.service';
@@ -52,5 +53,12 @@ export class UserController {
     @Body() dto: UpdateUserRequestDto,
   ): Promise<UserResponseDto> {
     return this.userService.update(id, dto);
+  }
+
+  @Post('recovery-password')
+  async recoveryPassword(
+    @Body() dto: UserRecoveryPasswordDto,
+  ): Promise<string> {
+    return this.userService.recoveryPassword(dto);
   }
 }

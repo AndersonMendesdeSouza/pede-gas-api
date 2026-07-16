@@ -19,6 +19,12 @@ export class AddressEntity {
   number: string;
 
   @typeorm.Column({ nullable: true })
+  lot?: string;
+
+  @typeorm.Column({ nullable: true })
+  block?: string;
+
+  @typeorm.Column({ nullable: true })
   complement?: string;
 
   @typeorm.Column()
