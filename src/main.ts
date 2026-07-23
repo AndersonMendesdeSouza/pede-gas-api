@@ -4,19 +4,23 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const corsOrigins = (process.env.CORS_ORIGIN ?? '')
+  const defaultCorsOrigins = ['https://pede-gas-page.vercel.app'];
+  const configuredCorsOrigins = (process.env.CORS_ORIGIN ?? '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const corsOrigins = [...defaultCorsOrigins, ...configuredCorsOrigins];
   const localDevelopmentOrigin =
     /^https?:\/\/(localhost|127(?:\.\d{1,3}){3}|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[01])(?:\.\d{1,3}){2})(?::\d+)?$/;
 
   app.enableCors({
     origin: (origin, callback) => {
       const isAllowedConfiguredOrigin =
-        corsOrigins.length > 0 && origin && corsOrigins.includes(origin);
+        origin && corsOrigins.includes(origin);
       const isAllowedLocalDevelopmentOrigin =
-        corsOrigins.length === 0 && origin && localDevelopmentOrigin.test(origin);
+        process.env.NODE_ENV !== 'production' &&
+        origin &&
+        localDevelopmentOrigin.test(origin);
 
       if (!origin || isAllowedConfiguredOrigin || isAllowedLocalDevelopmentOrigin) {
         callback(null, true);
