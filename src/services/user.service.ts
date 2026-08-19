@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { plainToInstance } from 'class-transformer';
 import { error } from 'console';
+import { UpdatePushTokenRequestDto } from 'src/dtos/request/update-push-token-request.dto';
 import { UpdateUserRequestDto } from 'src/dtos/request/update-user-request.dto';
 import { UserRecoveryPasswordDto } from 'src/dtos/request/user-recovery-password.dto';
 import { UserRequestDto } from 'src/dtos/request/user-request.dto';
@@ -82,6 +83,10 @@ export class UserService {
     } catch (error) {
       this.handleQueryError(error);
     }
+  }
+
+  async updatePushToken(userId: string, dto: UpdatePushTokenRequestDto): Promise<any> {
+    await this.userRepository.update(userId, { expoPushToken: dto.expoPushToken });
   }
   generateRecoveryCode(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();

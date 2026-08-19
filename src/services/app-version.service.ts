@@ -22,8 +22,7 @@ export class AppVersionService {
     const appVersion = this.appVersionRepository.create(dto);
 
     try {
-      const savedAppVersion =
-        await this.appVersionRepository.save(appVersion);
+      const savedAppVersion = await this.appVersionRepository.save(appVersion);
 
       return this.toResponseDto(savedAppVersion);
     } catch (error) {
@@ -74,6 +73,11 @@ export class AppVersionService {
     } catch (error) {
       this.handleQueryError(error);
     }
+  }
+
+  async deleted(id: string): Promise<AppVersionResponseDto> {
+    const data = this.appVersionRepository.delete(id);
+    return plainToInstance(AppVersionResponseDto, data);
   }
 
   private async findEntityById(id: string): Promise<AppVersionEntity> {

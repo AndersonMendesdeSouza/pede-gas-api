@@ -20,14 +20,26 @@ export class OrderRequestDto {
   paymentMethod: PaymentMethod;
 
   @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   subtotal: number;
 
   @IsNotEmpty()
+  @Type(() => Number)
   @IsNumber()
   @Min(0)
   total: number;
+
+  @IsOptional()
+  @IsString()
+  couponCode?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  discountAmount?: number;
 
   @IsOptional()
   @IsString()

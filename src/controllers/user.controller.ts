@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UpdatePushTokenRequestDto } from 'src/dtos/request/update-push-token-request.dto';
 import { UpdateUserRequestDto } from 'src/dtos/request/update-user-request.dto';
 import { UserRecoveryPasswordDto } from 'src/dtos/request/user-recovery-password.dto';
 import { UserRequestDto } from 'src/dtos/request/user-request.dto';
@@ -53,6 +54,19 @@ export class UserController {
     @Body() dto: UpdateUserRequestDto,
   ): Promise<UserResponseDto> {
     return this.userService.update(id, dto);
+  }
+
+  @Patch('me/push-token')
+  @UseGuards(JwtAuthGuard)
+  async updatePushToken(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdatePushTokenRequestDto,
+  ) {
+    await this.userService.updatePushToken(req.user.id, dto);
+
+    return {
+      message: 'Token de notificações salva com sucesso',
+    };
   }
 
   @Post('recovery-password')

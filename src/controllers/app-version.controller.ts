@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { AppVersionRequestDto } from 'src/dtos/request/app-version-request.dto';
 import { UpdateAppVersionRequestDto } from 'src/dtos/request/update-app-version-request.dto';
 import { AppVersionResponseDto } from 'src/dtos/response/app-version-response.dto';
@@ -36,5 +44,10 @@ export class AppVersionController {
     @Body() dto: UpdateAppVersionRequestDto,
   ): Promise<AppVersionResponseDto> {
     return this.appVersionService.update(id, dto);
+  }
+
+  @Delete(':id')
+  async deleted(@Param('id') id: string): Promise<AppVersionResponseDto> {
+    return this.appVersionService.deleted(id);
   }
 }

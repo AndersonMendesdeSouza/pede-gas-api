@@ -53,6 +53,8 @@ export class OrderService {
     });
     const subtotal = this.roundMoney(dto.subtotal);
     const total = this.roundMoney(dto.total);
+    const discountAmount = this.roundMoney(dto.discountAmount ?? 0);
+    const couponCode = dto.couponCode?.trim() || undefined;
     const calculatedSubtotal = this.roundMoney(
       items.reduce(
         (currentTotal, item) => currentTotal + Number(item.total),
@@ -64,7 +66,17 @@ export class OrderService {
       throw new BadRequestException('Subtotal do pedido invalido');
     }
 
-    if (total < subtotal) {
+    if (discountAmount > subtotal) {
+      throw new BadRequestException('Desconto do pedido invalido');
+    }
+
+    if (discountAmount > 0 && !couponCode) {
+      throw new BadRequestException('Cupom do pedido invalido');
+    }
+
+    const minimumTotal = this.roundMoney(subtotal - discountAmount);
+
+    if (total < minimumTotal) {
       throw new BadRequestException('Total do pedido invalido');
     }
 
@@ -75,6 +87,8 @@ export class OrderService {
       paymentMethod: dto.paymentMethod,
       subtotal,
       total,
+      couponCode,
+      discountAmount,
       observation: dto.observation?.trim() || undefined,
       deliveryStreet: dto.deliveryStreet.trim(),
       deliveryCity: dto.deliveryCity.trim(),
@@ -238,6 +252,8 @@ export class OrderService {
       paymentMethod: order.paymentMethod,
       subtotal: Number(order.subtotal),
       total: Number(order.total),
+      couponCode: order.couponCode,
+      discountAmount: Number(order.discountAmount ?? 0),
       observation: order.observation,
       deliveryStreet: order.deliveryStreet,
       deliveryCity: order.deliveryCity,

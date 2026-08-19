@@ -7,6 +7,13 @@ export class UserEntity {
   @typeorm.PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @typeorm.Column({
+    name: 'expo_push_token',
+    type: 'varchar',
+    nullable: true,
+  })
+  expoPushToken: string | null;
+
   @typeorm.Column()
   name: string;
 
@@ -33,7 +40,7 @@ export class UserEntity {
   isActive: boolean;
 
   @typeorm.OneToMany(() => AddressEntity, (addres) => addres.user, {
-    nullable:true
+    nullable: true,
   })
   address?: typeorm.Relation<AddressEntity[]>;
 
