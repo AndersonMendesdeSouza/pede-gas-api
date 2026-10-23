@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth.module';
 import { OrderModule } from './modules/order.module';
 import { UserModule } from './modules/user.module';
 import { AppController } from './app.controller';
+import { CouponModule } from './coupon/coupon.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { AppController } from './app.controller';
     AuthModule,
     OrderModule,
     UserModule,
+    CouponModule,
   ],
   controllers: [AppController],
 })
