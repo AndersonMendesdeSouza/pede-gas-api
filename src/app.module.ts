@@ -13,6 +13,7 @@ import { OrderModule } from './modules/order.module';
 import { UserModule } from './modules/user.module';
 import { AppController } from './app.controller';
 import { CouponModule } from './coupon/coupon.module';
+import { MessageModule } from './modules/message.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CouponModule } from './coupon/coupon.module';
     OrderModule,
     UserModule,
     CouponModule,
+    MessageModule
   ],
   controllers: [AppController],
 })

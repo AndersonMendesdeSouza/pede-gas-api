@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,15 +19,19 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from 'src/dtos/enums/user-role.enum';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from 'src/dtos/response/user-response.dto';
+import { MessageService } from './message.service';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name)
+
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
-  ) {}
+    private readonly messageService: MessageService,
+  ) { }
 
   async create(
     dto: OrderRequestDto,
@@ -99,6 +104,26 @@ export class OrderService {
       deliveryLot: dto.deliveryLot?.trim() || undefined,
       deliveryComplement: dto.deliveryComplement?.trim() || undefined,
     });
+
+    const productList = orderItems
+      .map((item) => `• ${item.productQuantity}x ${item.productName}`)
+      .join('\n');
+    const message =
+      `🔥 *Pedido recebido no Pede Gás!*\n\n` +
+      `Olá! Recebemos sua solicitação de pedido. 💙\n\n` +
+      `*Itens do seu pedido:*\n${productList}\n\n` +
+      `🚚 Aguarde a confirmação da revenda para o início da preparação e entrega.\n\n` +
+      `Obrigado pela confiança! Conte com o Pede Gás para deixar sua casa abastecida.`;
+
+    try {
+      await this.messageService.sendMessage('64996624354', message);
+      console.log('Message push!')
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(
+        `Falha ao enviar WhatsApp do pedido ${order.id}: ${reason}`,
+      );
+    }
 
     try {
       const savedOrderId = await this.orderRepository.manager.transaction(
