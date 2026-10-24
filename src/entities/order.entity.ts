@@ -44,18 +44,6 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   total: number;
 
-  @Column({ name: 'coupon_code', nullable: true })
-  couponCode?: string;
-
-  @Column({
-    name: 'discount_amount',
-    type: 'decimal',
-    precision: 10,
-    scale: 2,
-    default: 0,
-  })
-  discountAmount: number;
-
   @Column({ nullable: true })
   observation?: string;
 

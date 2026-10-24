@@ -11,8 +11,6 @@ export class OrderResponseDto {
   paymentMethod: PaymentMethod;
   subtotal: number;
   total: number;
-  couponCode?: string;
-  discountAmount: number;
   observation?: string;
   deliveryStreet: string;
   deliveryCity: string;

@@ -33,16 +33,6 @@ export class OrderRequestDto {
 
   @IsOptional()
   @IsString()
-  couponCode?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  discountAmount?: number;
-
-  @IsOptional()
-  @IsString()
   observation?: string;
 
   @IsNotEmpty()
