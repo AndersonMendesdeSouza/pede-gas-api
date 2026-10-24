@@ -20,6 +20,7 @@ import { UserRole } from 'src/dtos/enums/user-role.enum';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from 'src/dtos/response/user-response.dto';
 import { MessageService } from './message.service';
+import { UserService } from './user.service';
 
 @Injectable()
 export class OrderService {
@@ -31,6 +32,7 @@ export class OrderService {
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
     private readonly messageService: MessageService,
+    private readonly userService: UserService,
   ) { }
 
   async create(
@@ -56,6 +58,9 @@ export class OrderService {
         total,
       };
     });
+
+    const user = await this.userService.findById(userId, userId);
+
     const subtotal = this.roundMoney(dto.subtotal);
     const total = this.roundMoney(dto.total);
     const discountAmount = this.roundMoney(dto.discountAmount ?? 0);
@@ -116,7 +121,7 @@ export class OrderService {
       `Obrigado pela confiança! Conte com o Pede Gás para deixar sua casa abastecida.`;
 
     try {
-      await this.messageService.sendMessage('64996624354', message);
+      await this.messageService.sendMessage(user.phone, message);
       console.log('Message push!')
     } catch (error) {
       const reason = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -177,10 +182,30 @@ export class OrderService {
   ): Promise<OrderResponseDto> {
     this.ensureIsAdmin(user);
 
+    console.log('pedidoooo')
     const order = await this.findEntityById(id);
-    order.status = dto.status;
+    const shouldNotifyDelivery =
+      order.status !== OrderStatus.OUT_FOR_DELIVERY &&
+      dto.status === OrderStatus.OUT_FOR_DELIVERY;
 
+    order.status = dto.status;
     const updatedOrder = await this.orderRepository.save(order);
+
+    if (shouldNotifyDelivery) {
+      const message =
+        `🚚 *Seu pedido saiu para entrega!*\n\n` +
+        `Seu pedido do Pede Gás já está em rota. Prepare-se para receber! 💙\n\n` +
+        `Obrigado pela confiança!`;
+
+      try {
+        await this.messageService.sendMessage(order.user.phone, message);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : 'Erro desconhecido';
+        this.logger.error(
+          `Falha ao enviar WhatsApp do pedido ${order.id}: ${reason}`,
+        );
+      }
+    }
 
     return this.toResponseDto(updatedOrder);
   }
