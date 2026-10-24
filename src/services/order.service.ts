@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,15 +19,21 @@ import { QueryFailedError, Repository } from 'typeorm';
 import { UserRole } from 'src/dtos/enums/user-role.enum';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from 'src/dtos/response/user-response.dto';
+import { MessageService } from './message.service';
+import { UserService } from './user.service';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name)
+
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private readonly orderItemRepository: Repository<OrderItem>,
-  ) {}
+    private readonly messageService: MessageService,
+    private readonly userService: UserService,
+  ) { }
 
   async create(
     dto: OrderRequestDto,
@@ -51,6 +58,9 @@ export class OrderService {
         total,
       };
     });
+
+    const user = await this.userService.findById(userId, userId);
+
     const subtotal = this.roundMoney(dto.subtotal);
     const total = this.roundMoney(dto.total);
     const discountAmount = this.roundMoney(dto.discountAmount ?? 0);
@@ -99,6 +109,26 @@ export class OrderService {
       deliveryLot: dto.deliveryLot?.trim() || undefined,
       deliveryComplement: dto.deliveryComplement?.trim() || undefined,
     });
+
+    const productList = orderItems
+      .map((item) => `• ${item.productQuantity}x ${item.productName}`)
+      .join('\n');
+    const message =
+      `🔥 *Pedido recebido no Pede Gás!*\n\n` +
+      `Olá! Recebemos sua solicitação de pedido. 💙\n\n` +
+      `*Itens do seu pedido:*\n${productList}\n\n` +
+      `🚚 Aguarde a confirmação da revenda para o início da preparação e entrega.\n\n` +
+      `Obrigado pela confiança! Conte com o Pede Gás para deixar sua casa abastecida.`;
+
+    try {
+      await this.messageService.sendMessage(user.phone, message);
+      console.log('Message push!')
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(
+        `Falha ao enviar WhatsApp do pedido ${order.id}: ${reason}`,
+      );
+    }
 
     try {
       const savedOrderId = await this.orderRepository.manager.transaction(
@@ -152,10 +182,30 @@ export class OrderService {
   ): Promise<OrderResponseDto> {
     this.ensureIsAdmin(user);
 
+    console.log('pedidoooo')
     const order = await this.findEntityById(id);
-    order.status = dto.status;
+    const shouldNotifyDelivery =
+      order.status !== OrderStatus.OUT_FOR_DELIVERY &&
+      dto.status === OrderStatus.OUT_FOR_DELIVERY;
 
+    order.status = dto.status;
     const updatedOrder = await this.orderRepository.save(order);
+
+    if (shouldNotifyDelivery) {
+      const message =
+        `🚚 *Seu pedido saiu para entrega!*\n\n` +
+        `Seu pedido do Pede Gás já está em rota. Prepare-se para receber! 💙\n\n` +
+        `Obrigado pela confiança!`;
+
+      try {
+        await this.messageService.sendMessage(order.user.phone, message);
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : 'Erro desconhecido';
+        this.logger.error(
+          `Falha ao enviar WhatsApp do pedido ${order.id}: ${reason}`,
+        );
+      }
+    }
 
     return this.toResponseDto(updatedOrder);
   }
