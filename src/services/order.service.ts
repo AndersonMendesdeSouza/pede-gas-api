@@ -227,6 +227,20 @@ export class OrderService {
     order.status = OrderStatus.CANCELED;
     const updatedOrder = await this.orderRepository.save(order);
 
+    const message =
+      `❌ *Seu pedido foi cancelado!*\n\n` +
+      `Infelizmente, seu pedido do Pede Gás foi cancelado.\n\n` +
+      `Caso tenha alguma dúvida ou queira realizar um novo pedido, entre em contato conosco! 💙 `
+
+    try {
+      await this.messageService.sendMessage(order.user.phone, message);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : 'Erro desconhecido';
+      this.logger.error(
+        `Falha ao enviar WhatsApp do pedido ${order.id}: ${reason}`,
+      );
+    }
+
     return this.toResponseDto(updatedOrder);
   }
 
